@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資安攻防演練申訴案簡報</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+            overflow: hidden;
+        }
+        .presentation-container {
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16 / 9;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .slide {
+            display: none;
+            flex-grow: 1;
+            padding: 3rem 4rem; /* Adjusted padding */
+            animation: fadeIn 0.5s ease-in-out;
+            flex-direction: column;
+        }
+        .slide.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem; /* Adjusted margin */
+        }
+        .slide-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        .slide-subtitle {
+            font-size: 1.25rem;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+        .navigation-controls {
+            padding: 1.5rem 4rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        .nav-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .nav-button:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        .nav-button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .slide-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .slide-main-content {
+             flex-grow: 1;
+        }
+        .gemini-features {
+            margin-top: auto;
+            padding-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .gemini-button {
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+        .gemini-button:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+        .highlight {
+            color: #c026d3;
+            font-weight: 700;
+        }
+        .code-block {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+        }
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+        #gemini-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #gemini-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.3s ease-in-out;
+        }
+        #gemini-modal.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div id="slide-1" class="slide active">
+            <div class="slide-content justify-center text-center">
+                 <div class="slide-main-content flex flex-col items-center justify-center">
+                    <div class="text-2xl text-slate-500 mb-4">114年行政院國家資通安全會報</div>
+                    <h1 class="text-5xl font-bold text-blue-900 leading-tight">網路攻防演練<br>資通系統實兵演練申訴案</h1>
+                    <p class="text-xl text-slate-600 mt-8">案件分析與報告</p>
+                    <div class="mt-12 text-lg text-slate-500">
+                        <p>申訴機關：環境部大氣環境司</p>
+                        <p>日期：114年8月11日</p>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="title">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="title">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Case Overview -->
+        <div id="slide-2" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">案件總覽</h2>
+                <p class="slide-subtitle">事件背景與核心摘要</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content">
+                    <div class="grid grid-cols-2 gap-8 pt-4">
+                        <div class="bg-slate-50 p-6 rounded-lg">
+                            <h3 class="font-bold text-xl mb-3 text-slate-700">基本資訊</h3>
+                            <ul class="space-y-4 text-lg">
+                                <li class="flex items-start"><i class="fas fa-building fa-fw mr-3 mt-1 text-blue-600"></i><div><strong class="font-semibold">申訴機關:</strong><br>環境部大氣環境司</div></li>
+                                <li class="flex items-start"><i class="fas fa-calendar-alt fa-fw mr-3 mt-1 text-blue-600"></i><div><strong class="font-semibold">申訴日期:</strong><br>114年8月11日</div></li>
+                                <li class="flex items-start"><i class="fas fa-hashtag fa-fw mr-3 mt-1 text-blue-600"></i><div><strong class="font-semibold">警訊編號:</strong><br>0730-16-低-...-注入攻擊-446</div></li>
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h3 class="font-bold text-xl mb-3 text-slate-700">事件摘要</h3>
+                            <p class="text-lg leading-relaxed">演練單位回報一次「<span class="highlight">注入攻擊成功</span>」警訊。經系統廠商檢視，此為 <span class="highlight">反射型XSS攻擊</span> 測試，觸發點為一<span class="highlight">已下架之隱藏頁面</span>。申訴方認為，此攻擊並未對系統造成實質損害，不應判定為「攻擊成功」。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="overview">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="overview">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The "Attack" -->
+        <div id="slide-3" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">攻擊手法解析</h2>
+                <p class="slide-subtitle">反射型跨網站指令碼 (Reflected XSS)</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content flex flex-col justify-center">
+                    <p class="text-xl mb-4 text-center">攻擊者在一個已下架的頁面輸入框中，注入了惡意腳本：</p>
+                    <div class="code-block text-lg">
+                        &lt;img src=x onerror=alert('XSS')&gt;
+                    </div>
+                    <div class="text-center mt-8 bg-amber-50 p-6 rounded-lg">
+                        <i class="fas fa-lightbulb text-5xl text-amber-500 mb-4"></i>
+                        <p class="text-xl">此腳本導致瀏覽器跳出一個警告視窗 (alert)，證明腳本被執行。這是一個典型的 XSS 概念驗證 (PoC) 攻擊，但<span class="font-bold">關鍵問題在於</span>：這個攻擊的影響範圍有多大？</p>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="attack">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="attack">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Reason 1 -->
+        <div id="slide-4" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">申訴理由 (一)：攻擊點為已下架之隱藏頁面</h2>
+                <p class="slide-subtitle">正常使用者無法存取，無實際利用路徑</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content image-container">
+                    <div class="text-center">
+                        <h3 class="font-bold text-lg mb-2">活動期間 (正常上線)</h3>
+                        <img src="https://i.imgur.com/K1C3z3W.png" alt="活動期間頁面">
+                        <p class="mt-2 text-slate-600">使用者可透過入口按鈕進入頁面。</p>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="font-bold text-lg mb-2">活動結束後 (已下架)</h3>
+                        <img src="https://i.imgur.com/y1vObyR.png" alt="活動結束後頁面">
+                        <p class="mt-2 text-slate-600">入口按鈕已移除，正常流程無法存取。</p>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="reason1">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="reason1">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Reason 2 -->
+        <div id="slide-5" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">申訴理由 (二)：未觸發後端流程，無實質損害</h2>
+                <p class="slide-subtitle">攻擊僅在測試人員本機瀏覽器層面產生反應</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content">
+                    <div class="grid grid-cols-3 gap-8 pt-6">
+                        <div class="text-center bg-slate-50 p-6 rounded-lg">
+                            <i class="fas fa-server text-5xl text-red-500 mb-4"></i>
+                            <h3 class="font-bold text-xl">無後端互動</h3>
+                            <p>攻擊未與伺服器互動，未觸發任何後端程式碼。</p>
+                        </div>
+                        <div class="text-center bg-slate-50 p-6 rounded-lg">
+                            <i class="fas fa-database text-5xl text-red-500 mb-4"></i>
+                            <h3 class="font-bold text-xl">無資料外洩</h3>
+                            <p>沒有資料庫操作、登入繞過或資料外洩風險。</p>
+                        </div>
+                         <div class="text-center bg-slate-50 p-6 rounded-lg">
+                            <i class="fas fa-users text-5xl text-red-500 mb-4"></i>
+                            <h3 class="font-bold text-xl">無使用者擴散</h3>
+                            <p>攻擊不會影響到其他使用者。</p>
+                        </div>
+                    </div>
+                     <div class="mt-8 p-4 bg-green-50 text-green-800 rounded-lg text-lg flex items-center">
+                        <i class="fas fa-shield-alt mr-4 text-2xl"></i>
+                        <p>經 Acunetix 及 Burp Suite 弱點掃描，皆<span class="font-bold">未發現</span>相關中高風險漏洞。</p>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="reason2">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="reason2">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Reason 3 -->
+        <div id="slide-6" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">申訴理由 (三)：後端具備攔截機制</h2>
+                <p class="slide-subtitle">即使惡意輸入送達後端，也會被阻擋</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content grid grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="font-bold text-xl mb-4">模擬攻擊測試</h3>
+                         <p class="text-lg mb-4">在測試主機上模擬將惡意腳本送出。</p>
+                         <img src="https://i.imgur.com/dK0nJpQ.png" alt="模擬攻擊測試" class="rounded-lg shadow-md border">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-4">系統反應</h3>
+                        <p class="text-lg mb-4">系統後端正確識別出潛在危險的輸入，並顯示錯誤訊息，<span class="highlight">有效阻斷了攻擊</span>。</p>
+                        <img src="https://i.imgur.com/5lT6F3t.png" alt="攔截錯誤訊息" class="rounded-lg shadow-md border">
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="reason3">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="reason3">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Core Argument -->
+        <div id="slide-7" class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">核心論點：何謂「攻擊成功」？</h2>
+                <p class="slide-subtitle">從資安鐵三角 (CIA Triad) 評估</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content flex flex-col justify-center items-center">
+                    <div class="grid grid-cols-3 gap-8 text-center w-full max-w-4xl">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <i class="fas fa-lock text-4xl text-blue-600 mb-3"></i>
+                            <h3 class="font-bold text-xl">機密性 (Confidentiality)</h3>
+                            <p class="mt-2">是否竊取或洩露敏感資料？</p>
+                            <p class="text-2xl font-bold text-red-600 mt-4">否</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <i class="fas fa-check-circle text-4xl text-green-600 mb-3"></i>
+                            <h3 class="font-bold text-xl">完整性 (Integrity)</h3>
+                            <p class="mt-2">是否篡改或破壞系統數據？</p>
+                            <p class="text-2xl font-bold text-red-600 mt-4">否</p>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-lg">
+                            <i class="fas fa-bolt text-4xl text-yellow-600 mb-3"></i>
+                            <h3 class="font-bold text-xl">可用性 (Availability)</h3>
+                            <p class="mt-2">是否導致服務中斷或無法使用？</p>
+                            <p class="text-2xl font-bold text-red-600 mt-4">否</p>
+                        </div>
+                    </div>
+                    <div class="mt-12 text-center text-xl bg-slate-100 p-6 rounded-lg">
+                        <p>申訴方認為，本案未對以上任一面向造成實質影響，性質上僅為「攻擊觸發」，<span class="font-bold">並未「成功入侵」</span>。</p>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="argument">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="argument">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: The Verdict -->
+        <div id="slide-8" class="slide">
+             <div class="slide-header">
+                <h2 class="slide-title">最終判決</h2>
+                <p class="slide-subtitle">裁判組回覆</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content flex items-center justify-center">
+                    <div class="w-full max-w-4xl p-10 rounded-xl bg-red-50 border-2 border-red-200 text-center">
+                        <i class="fas fa-gavel text-6xl text-red-600 mb-6"></i>
+                        <h3 class="text-4xl font-bold text-red-800 mb-4">申訴不通過</h3>
+                        <div class="text-xl text-red-900 leading-relaxed text-left p-6 bg-white rounded-lg">
+                            <p class="font-bold mb-3">裁判組理由：</p>
+                            <p>經檢視，攻擊手於演練期間，確實在頁面輸入XSS語法後<span class="highlight">成功顯示彈跳式視窗</span>。此行為顯示系統未妥善過濾攻擊語法。</p>
+                            <p class="mt-2">依本年度演練之弱點衝擊性判斷原則，此情況符合「<span class="font-bold">成功執行惡意腳本，但受影響之頁面限定該使用者</span>」，故判定為<span class="font-bold">低衝擊性</span>攻擊成功，維持原報告與警訊。</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="verdict">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="verdict">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: Key Takeaway -->
+        <div id="slide-9" class="slide">
+             <div class="slide-header">
+                <h2 class="slide-title">結論與啟示</h2>
+                <p class="slide-subtitle">從本次事件中學到的教訓</p>
+            </div>
+            <div class="slide-content">
+                <div class="slide-main-content flex items-center justify-center">
+                    <div class="w-full max-w-4xl p-10 rounded-xl bg-blue-50 border-2 border-blue-200 text-center">
+                        <i class="fas fa-lightbulb text-6xl text-blue-600 mb-6"></i>
+                        <h3 class="text-3xl font-bold text-blue-800 mb-4">防禦無死角</h3>
+                        <div class="text-xl text-blue-900 leading-relaxed text-left p-6 bg-white rounded-lg shadow-inner">
+                             <p>裁判組的判定標準著重於「<span class="highlight">漏洞是否存在</span>」，而非「<span class="highlight">漏洞是否能被輕易利用</span>」。</p>
+                             <p class="mt-4">即使是已下架、隱藏或看似無害的頁面，只要仍存在於伺服器上，其潛在的資安漏洞就可能在演練或被有心人士發現時，被視為一個有效的攻擊點。</p>
+                             <p class="font-bold mt-6">關鍵啟示：對於不再使用的網頁或功能，應從程式碼及伺服器上<span class="text-red-600">徹底移除</span>，而非僅僅隱藏前端入口。</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="gemini-features">
+                    <button class="gemini-button" data-action="analyze" data-prompt-type="takeaway">✨ AI 深度解析</button>
+                    <button class="gemini-button" data-action="qa" data-prompt-type="takeaway">✨ 產生問答建議</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Navigation -->
+        <div class="navigation-controls">
+            <button id="prevBtn" class="nav-button"><i class="fas fa-arrow-left mr-2"></i> 上一頁</button>
+            <div class="flex items-center gap-4">
+                <span id="slide-counter" class="text-slate-600 font-medium"></span>
+                <button id="summarizeBtn" class="gemini-button">✨ 總結簡報</button>
+            </div>
+            <button id="nextBtn" class="nav-button">下一頁 <i class="fas fa-arrow-right ml-2"></i></button>
+        </div>
+    </div>
+    
+    <!-- Gemini Modal -->
+    <div id="gemini-modal" class="hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">AI 分析</h3>
+                <button id="close-modal-btn" class="close-button">&times;</button>
+            </div>
+            <div id="modal-body">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slide-counter');
+        const summarizeBtn = document.getElementById('summarizeBtn');
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            currentSlide = index;
+            updateControls();
+        }
+
+        function updateControls() {
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+            slideCounter.textContent = `第 ${currentSlide + 1} / ${slides.length} 頁`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && document.getElementById('gemini-modal').classList.contains('hidden')) {
+                nextBtn.click();
+            } else if (e.key === 'ArrowLeft' && document.getElementById('gemini-modal').classList.contains('hidden')) {
+                prevBtn.click();
+            } else if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        showSlide(0);
+
+        // Gemini API integration
+        const modal = document.getElementById('gemini-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        const apiKey = ""; // Canvas will provide this
+
+        const prompts = {
+            analyze: {
+                title: "針對這份簡報的標題頁，提供一個引人入勝的開場白，並點出這次申訴案的核心議題。",
+                overview: "你是一位資安專家。請用白話文解釋什麼是『反射型XSS攻擊』，並分析為何申訴方認為『已下架的隱藏頁面』這個因素很重要。",
+                attack: "你是一位駭客技術講師。請解釋這個XSS攻擊腳本 `<img src=x onerror=alert('XSS')>` 的運作原理。除了跳出警告視窗，它還可能造成哪些更嚴重的危害？",
+                reason1: "從網站維運的角度分析，為什麼『僅隱藏頁面但不從伺服器移除』會是一個常見但有風險的做法？提供1-2個可能的原因。",
+                reason2: "解釋為何『未觸發後端流程』是判斷攻擊實質損害的一個關鍵指標。如果攻擊成功觸發了後端，可能會發生什麼事？",
+                reason3: "除了目前展示的後端攔截機制，還有哪些常見的Web應用程式防火牆(WAF)規則或程式碼層面的防護措施，可以有效預防XSS攻擊？",
+                argument: "你是一位資安顧問。請評論申訴方使用『資安鐵三角(CIA Triad)』來論證『攻擊未成功』的策略是否恰當。這個論述有什麼優點或盲點？",
+                verdict: "你是一位法務專家。請分析裁判組的判決邏輯。為什麼即使沒有造成實質損失，『漏洞存在』本身就足以構成『攻擊成功』的判定？這在資安演練中有何意義？",
+                takeaway: "你是一位企業的資訊安全長(CISO)。請根據這次事件的結論與啟示，草擬一份給公司所有開發團隊的內部公告，強調『安全下架(Secure Decommissioning)』的重要性與具體執行步驟。"
+            },
+            qa: {
+                title: "針對這份簡報的開場，聽眾可能會對演練的『目的』與『範圍』產生哪些疑問？請提供2個問題。",
+                overview: "針對案件總覽，聽眾可能會對『攻擊成功』的定義或『申訴的動機』提出什麼問題？請提供2個問題。",
+                attack: "關於這個XSS攻擊手法，技術背景較弱的聽眾可能會問什麼問題？而技術背景較強的聽眾又可能會問什麼深入的問題？各提供1個。",
+                reason1: "關於『已下架頁面』，聽眾可能會追問什麼關於『存取控制』或『資產盤點』的問題？請提供2個問題。",
+                reason2: "對於『無實質損害』這個論點，聽眾可能會從什麼角度提出質疑或挑戰？請提供2個問題。",
+                reason3: "關於後端防護，聽眾可能會想知道這個攔截機制的『普遍性』或『是否存在被繞過的可能』。請就此方向提供2個問題。",
+                argument: "對於申訴方的核心論點，聽眾可能會挑戰『CIA三要素』是否足以涵蓋所有風險，例如『商譽風險』。請就此方向提供1個問題。",
+                verdict: "針對裁判組的判決，聽眾可能會對判決的『公平性』或『標準一致性』提出什麼質疑？請提供2個問題。",
+                takeaway: "在結論與啟示之後，聽眾可能會想知道什麼關於『落實改善』或『未來預防』的具體作法？請提供2個問題。"
+            }
+        };
+
+        function getPresentationText() {
+            let fullText = "";
+            slides.forEach((slide, index) => {
+                const title = slide.querySelector('.slide-title')?.innerText || '';
+                const subtitle = slide.querySelector('.slide-subtitle')?.innerText || '';
+                const contentElements = slide.querySelectorAll('.slide-main-content p, .slide-main-content h3, .slide-main-content .code-block, .slide-main-content li');
+                let content = Array.from(contentElements).map(el => el.innerText.trim()).join('\n');
+                fullText += `\n\n[投影片 ${index + 1}: ${title}]\n${subtitle}\n${content}`;
+            });
+            return fullText;
+        }
+
+        summarizeBtn.addEventListener('click', async () => {
+            const presentationText = getPresentationText();
+            const prompt = `你是一位專業的報告分析師。請根據以下逐頁的簡報內容，為我產生一份約200-250字的執行摘要(Executive Summary)。摘要需包含四個重點：1. 案件背景、2. 申訴方的核心論點、3. 裁判組的最終判決理由、4. 此案帶來的關鍵啟示。\n\n---\n[簡報內容開始]\n${presentationText}\n[簡報內容結束]\n---`;
+
+            modalTitle.textContent = '✨ AI 簡報總結';
+            modalBody.innerHTML = '<div class="loader"></div>';
+            openModal();
+
+            const responseText = await callGeminiAPI(prompt);
+            
+            let htmlContent = responseText
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code class="bg-gray-200 p-1 rounded">$1</code>');
+
+            modalBody.innerHTML = `<div class="text-lg leading-relaxed">${htmlContent}</div>`;
+        });
+
+
+        async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries > 0) {
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiAPI(prompt, retries - 1, delay * 2);
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result.candidates?.[0]?.content?.parts?.[0]?.text || "無法取得分析結果，請稍後再試。";
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGeminiAPI(prompt, retries - 1, delay * 2);
+                }
+                return "API 請求失敗，請檢查網路連線或稍後重試。";
+            }
+        }
+        
+        function openModal() {
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('visible'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('visible');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.querySelectorAll('.gemini-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const action = e.target.dataset.action;
+                const promptType = e.target.dataset.promptType;
+                
+                if (!action || !promptType) return; // Exit if it's the summarize button
+
+                const promptText = prompts[action][promptType];
+
+                if (!promptText) {
+                    console.error("Prompt not found for:", action, promptType);
+                    return;
+                }
+
+                modalTitle.textContent = action === 'analyze' ? '✨ AI 深度解析' : '✨ 問答建議';
+                modalBody.innerHTML = '<div class="loader"></div>';
+                openModal();
+                
+                const responseText = await callGeminiAPI(promptText);
+                
+                // A simple markdown to HTML converter
+                let htmlContent = responseText
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 p-1 rounded">$1</code>');
+
+                modalBody.innerHTML = `<div class="text-lg leading-relaxed">${htmlContent}</div>`;
+            });
+        });
+
+    </script>
+</body>
+</html>
+
